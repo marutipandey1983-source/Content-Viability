@@ -1,0 +1,132 @@
+
+<h2 class="sr-only">Scatter chart mapping 13 content delivery formats by engagement level on the Y axis and cost and effort on the X axis, divided into four quadrants.</h2>
+
+<div style="position:relative; width:100%; height:560px;">
+  <canvas id="matrix" role="img" aria-label="Bubble chart of 13 content types plotted by engagement (Y) and cost/effort (X). Classroom sessions and coaching score highest on both axes. Cheat sheets and flash cards score lowest on both.">Content matrix data for 13 learning formats across engagement and cost dimensions.</canvas>
+</div>
+
+<div style="display:flex; flex-wrap:wrap; gap:16px; margin-top:16px; font-size:12px; color:var(--color-text-secondary);">
+  <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#378ADD;display:inline-block;"></span>Self-paced digital</span>
+  <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#1D9E75;display:inline-block;"></span>AI-powered</span>
+  <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#D85A30;display:inline-block;"></span>Reference material</span>
+  <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:#7F77DD;display:inline-block;"></span>Live / human-led</span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<script>
+Chart.register(ChartDataLabels);
+
+const items = [
+  { label: '1. Text e-learning', x: 2.5, y: 3.2, cat: 0 },
+  { label: '2. Interactive e-learning', x: 4.5, y: 6.5, cat: 0 },
+  { label: '3. AI explainer videos', x: 4.0, y: 5.8, cat: 1 },
+  { label: '4. SME videos', x: 6.5, y: 6.0, cat: 3 },
+  { label: '5. Flash cards', x: 1.2, y: 2.5, cat: 2 },
+  { label: '6. Cheat sheets', x: 1.0, y: 1.8, cat: 2 },
+  { label: '7. AI pitch partner', x: 5.5, y: 8.5, cat: 1 },
+  { label: '8. Classroom sessions', x: 8.5, y: 9.0, cat: 3 },
+  { label: '9. Webinars', x: 5.0, y: 6.8, cat: 3 },
+  { label: '10. Quiz / assessments', x: 2.8, y: 5.5, cat: 0 },
+  { label: '11. AI role plays', x: 5.8, y: 8.8, cat: 1 },
+  { label: '12. Peer discussion forums', x: 2.5, y: 5.0, cat: 3 },
+  { label: '13. Coaching & mentoring', x: 8.0, y: 9.5, cat: 3 },
+];
+
+const colors = ['#378ADD', '#1D9E75', '#D85A30', '#7F77DD'];
+const bgAlpha = ['#378ADD33', '#1D9E7533', '#D85A3033', '#7F77DD33'];
+
+const datasets = [0,1,2,3].map(cat => ({
+  label: ['Self-paced digital','AI-powered','Reference material','Live / human-led'][cat],
+  data: items.filter(d => d.cat === cat).map(d => ({ x: d.x, y: d.y, label: d.label })),
+  backgroundColor: bgAlpha[cat],
+  borderColor: colors[cat],
+  borderWidth: 1.5,
+  pointRadius: 18,
+  pointHoverRadius: 20,
+}));
+
+const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+const gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
+const textColor = isDark ? '#aaa' : '#666';
+const dividerColor = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)';
+
+new Chart(document.getElementById('matrix'), {
+  type: 'bubble',
+  data: { datasets },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: { padding: { top: 40, right: 20, bottom: 40, left: 20 } },
+    scales: {
+      x: {
+        min: 0, max: 10,
+        title: { display: true, text: 'Cost & effort  →', color: textColor, font: { size: 12 } },
+        ticks: {
+          color: textColor, font: { size: 11 },
+          callback: v => {
+            if (v === 1) return 'Low';
+            if (v === 5) return 'Medium';
+            if (v === 9) return 'High';
+            return '';
+          }
+        },
+        grid: { color: gridColor }
+      },
+      y: {
+        min: 0, max: 10.5,
+        title: { display: true, text: 'Engagement & reinforcement  →', color: textColor, font: { size: 12 } },
+        ticks: {
+          color: textColor, font: { size: 11 },
+          callback: v => {
+            if (v === 1) return 'Low';
+            if (v === 5) return 'Medium';
+            if (v === 9) return 'High';
+            return '';
+          }
+        },
+        grid: { color: gridColor }
+      }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ctx.raw.label,
+          title: () => ''
+        },
+        backgroundColor: isDark ? '#2a2a2a' : '#fff',
+        borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
+        borderWidth: 0.5,
+        bodyColor: isDark ? '#ddd' : '#333',
+        bodyFont: { size: 12 },
+        padding: 8
+      },
+      datalabels: {
+        color: isDark ? '#ccc' : '#333',
+        font: { size: 9.5 },
+        formatter: (val) => {
+          const short = val.label.replace(/^\d+\.\s/, '').replace('Coaching & mentoring', 'Coaching').replace('Interactive e-learning', 'Interactive e-l.').replace('AI explainer videos', 'AI explainer').replace('AI pitch partner', 'AI pitch').replace('Quiz / assessments', 'Quiz').replace('Peer discussion forums', 'Peer forums').replace('Classroom sessions', 'Classroom').replace('Text e-learning', 'Text e-l.').replace('SME videos', 'SME videos').replace('AI role plays', 'AI role plays').replace('Flash cards', 'Flash cards').replace('Cheat sheets', 'Cheat sheets');
+          return short;
+        },
+        textAlign: 'center',
+        anchor: 'center',
+        clamp: true,
+        overflow: 'visible'
+      },
+      annotation: {
+        annotations: {
+          vLine: {
+            type: 'line', xMin: 5, xMax: 5, yMin: 0, yMax: 10.5,
+            borderColor: dividerColor, borderWidth: 1, borderDash: [4, 4]
+          },
+          hLine: {
+            type: 'line', yMin: 5, yMax: 5, xMin: 0, xMax: 10,
+            borderColor: dividerColor, borderWidth: 1, borderDash: [4, 4]
+          }
+        }
+      }
+    }
+  }
+});
+</script>
